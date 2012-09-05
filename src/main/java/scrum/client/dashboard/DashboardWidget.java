@@ -17,7 +17,11 @@ package scrum.client.dashboard;
 import ilarkesto.core.scope.Scope;
 import ilarkesto.gwt.client.HyperlinkWidget;
 import ilarkesto.gwt.client.TableBuilder;
+
+import java.util.List;
+
 import scrum.client.common.AScrumWidget;
+import scrum.client.sprint.Task;
 import scrum.client.workspace.PagePanel;
 import scrum.client.workspace.ProjectWorkspaceWidgets;
 import scrum.client.workspace.ScrumNavigatorWidget;
@@ -32,12 +36,26 @@ public class DashboardWidget extends AScrumWidget {
 
 		ScrumNavigatorWidget nav = widgets.getSidebar().getNavigator();
 
+		List<Task> tasks = getCurrentProject().getTasks();
+		int burned = 0;
+		int total = 0;
+		for (Task task : tasks) {
+			burned += task.getBurnedWork();
+			total += task.getBurnedWork() + task.getRemainingWork();
+		}
+		int progress = (int) ((burned / (double) total) * 100);
+
 		PagePanel sprintBurndown = new PagePanel();
-		sprintBurndown.addHeader("Sprint Burndown",
+		sprintBurndown.addHeader("Sprint Burndown        " + burned + " of " + total + "hours (" + progress + "%)",
 			new HyperlinkWidget(nav.createSwitchAction(widgets.getSprintBacklog())));
 		sprintBurndown.addSection(new SprintBurndownWidget());
 
 		PagePanel teamsTasks = new PagePanel();
+		teamsTasks.addHeader("Team members status",
+			new HyperlinkWidget(nav.createSwitchAction(widgets.getWhiteboard())),
+			new HyperlinkWidget(nav.createSwitchAction(widgets.getIssueList())));
+		teamsTasks.addSection(new TeamStatusWidget());
+
 		teamsTasks.addHeader("Teams current work",
 			new HyperlinkWidget(nav.createSwitchAction(widgets.getWhiteboard())),
 			new HyperlinkWidget(nav.createSwitchAction(widgets.getIssueList())));
